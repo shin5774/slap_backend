@@ -63,14 +63,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'rest_framework',
-    'board',
-    'member',
+    'plants_section',
+    'user',
     'disease',
-    'plants_by_disease',
-    'plants_detail',
-    'plants_group',
-    'models',
-    'board_like_by_user',
+    'disease_by_section',
+    'section_detail',
+    'farm',
 ]
 
 MIDDLEWARE = [

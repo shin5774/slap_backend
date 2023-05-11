@@ -5,28 +5,25 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 from rest_framework import routers
-from board import views as board_views
-from member import views as member_views
+from plants_section import views as board_views
+from user import views as member_views
 from disease import views as disease_views
-from plants_detail import views as plants_detail_views
-from plants_by_disease import views as plants_by_disease_views
-from plants_group import views as plants_group_views
-from board_like_by_user import views as board_like_by_user_views
-import models.urls
+from section_detail import views as plants_detail_views
+from disease_by_section import views as plants_by_disease_views
+from farm import views as plants_group_views
+
 
 router = routers.DefaultRouter()
-router.register(r'member', member_views.MemberListAPI)
-router.register(r'board', board_views.BoardListAPI)
+router.register(r'user', member_views.MemberListAPI)
+router.register(r'plants_section', board_views.BoardListAPI)
 router.register(r'disease', disease_views.DiseaseListAPI)
-router.register(r'plants_detail', plants_detail_views.PlantsDetailListAPI)
-router.register(r'plants_by_disease', plants_by_disease_views.PlantsByDiseaseListAPI)
-router.register(r'plants_group', plants_group_views.PlantsGroupListAPI)
-router.register(r'board_like_by_user',board_like_by_user_views.BoardLikeByUserListAPI)
-#router.register(r'temp_image',temp_image_views.TempImageListAPI)
+router.register(r'section_detail', plants_detail_views.PlantsDetailListAPI)
+router.register(r'disease_by_section', plants_by_disease_views.PlantsByDiseaseListAPI)
+router.register(r'farm', plants_group_views.PlantsGroupListAPI)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include(router.urls)),
-    path('models/',include(models.urls)),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
