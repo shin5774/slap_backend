@@ -20,7 +20,7 @@ class PlantsGroupListAPI(viewsets.ModelViewSet):
         dupl_name=self.queryset.filter(user=user,name=context['name'])
 
         if len(dupl_name) !=0:
-            return Response({"message":"동일한 이름의 작물이 있습니다. 다른 이름을 등록해주세요"})
+            return Response({"msg":"동일한 이름의 농장이 있습니다. 다른 이름을 등록해주세요"})
 
         str_date=request.data['date']
         date=datetime.strptime(str_date,"%Y-%m-%d")
@@ -50,17 +50,17 @@ class PlantsGroupListAPI(viewsets.ModelViewSet):
     # 유저 비번 바꾸는거랑 동일한 방식으로 보내면 됨
     @action(detail=True,methods=['PATCH'])
     def change_status(self,request,pk=None):
-        plants=self.queryset.get(id=pk)
+        farm=self.queryset.get(id=pk)
         status=request.data['status']
 
         if status=='1':
-            plants.status='1'
+            farm.status='1'
         else:
-            plants.status='0'
+            farm.status='0'
 
-        plants.save()
+        farm.save()
 
-        serializer=self.get_serializer(plants)
+        serializer=self.get_serializer(farm)
         return Response(serializer.data)
 
     # 위와 동일/ 필요값 name:변경할 이름
@@ -72,24 +72,24 @@ class PlantsGroupListAPI(viewsets.ModelViewSet):
         exist=self.queryset.filter(user=user,name=name)
 
         if len(exist) !=0:
-            return Response({"message":"동일한 이름의 작물이 있습니다. 다른 이름을 등록해주세요"})
+            return Response({"msg":"동일한 이름의 농장이 있습니다. 다른 이름을 등록해주세요"})
 
-        plants = self.queryset.get(id=pk)
+        farm = self.queryset.get(id=pk)
 
-        os.rename("media/image/" + user.id + "/" + plants.name,"media/image/" + user.id + "/" + name)
+        os.rename("media/image/" + user.id + "/" + farm.name,"media/image/" + user.id + "/" + name)
 
-        plants.name=name
-        plants.save()
+        farm.name = name
+        farm.save()
 
-        serializer = self.get_serializer(plants)
+        serializer = self.get_serializer(farm)
         return Response(serializer.data)
 
     @action(detail=False, methods=['GET'])
     def user_list(self, request):
         user = User.objects.get(id=request.session['id'])
-        user_group=Farm.objects.filter(user=user)
+        user_farm=Farm.objects.filter(user=user)
 
-        serializer=self.get_serializer(user_group,many=True)
+        serializer=self.get_serializer(user_farm,many=True)
         return Response(serializer.data)
 
 
