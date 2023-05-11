@@ -16,6 +16,7 @@ class PlantsGroupListAPI(viewsets.ModelViewSet):
     def create(self, request):
         context={}
         context['name'] = request.data['name']
+        context['number']=request.data['number']
         user=User.objects.get(id=request.session['id'])
         dupl_name=self.queryset.filter(user=user,name=context['name'])
 
@@ -90,6 +91,22 @@ class PlantsGroupListAPI(viewsets.ModelViewSet):
         user_farm=Farm.objects.filter(user=user)
 
         serializer=self.get_serializer(user_farm,many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['PATCH'])
+    def change_section(self, request, pk=None):
+        farm = self.queryset.get(id=pk)
+        number=request.data['number']
+
+        if number<0:
+            return Response({"msg": "잘못된 섹션수를 입력하였습니다."})
+
+        #섹션수 수정을 위한 코드(섹션 테이블에 데이터 추가 및 삭제를 하는법 의논 필요)
+
+        farm.number = number
+        farm.save()
+
+        serializer = self.get_serializer(farm)
         return Response(serializer.data)
 
 
