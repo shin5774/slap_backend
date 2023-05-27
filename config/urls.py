@@ -8,7 +8,6 @@ from rest_framework import routers
 from plants_section import views as board_views
 from user import views as member_views
 from disease import views as disease_views
-from section_detail import views as plants_detail_views
 from disease_by_section import views as plants_by_disease_views
 from farm import views as plants_group_views
 
@@ -17,7 +16,6 @@ router = routers.DefaultRouter()
 router.register(r'user', member_views.MemberListAPI)
 router.register(r'plants_section', board_views.BoardListAPI)
 router.register(r'disease', disease_views.DiseaseListAPI)
-router.register(r'section_detail', plants_detail_views.PlantsDetailListAPI)
 router.register(r'disease_by_section', plants_by_disease_views.PlantsByDiseaseListAPI)
 router.register(r'farm', plants_group_views.PlantsGroupListAPI)
 

@@ -12,8 +12,6 @@ from skimage import io
 from plants_section.models import PlantsSection
 from user.models import User
 from farm.models import Farm
-from section_detail.models import SectionDetail
-from section_detail.views import PlantsDetailListAPI
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db import transaction

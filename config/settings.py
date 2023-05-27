@@ -67,7 +67,6 @@ INSTALLED_APPS = [
     'user',
     'disease',
     'disease_by_section',
-    'section_detail',
     'farm',
 ]
 
