@@ -48,6 +48,8 @@ class PlantsGroupListAPI(viewsets.ModelViewSet):
 
         for i in range(farm.row*farm.column):
             PlantsSection.objects.create(name=i+1,farm=farm)
+            os.mkdir("media/image/" + user.id + "/" + self.request.data['name'] + "/" +str(i+1))
+
 
 
     #삭제 수행안됨
