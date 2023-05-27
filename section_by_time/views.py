@@ -2,18 +2,18 @@ import os
 from datetime import datetime
 
 from user.models import User
-from farm.models import Farm
+from .models import SectionByTime
 from plants_section.models import PlantsSection
 
 from rest_framework.response import Response
-from .serializers import FarmSerializer
+from .serializers import SectionByTimeSerializer
 from rest_framework import viewsets,status
 from rest_framework.decorators import action
 
 
-class PlantsGroupListAPI(viewsets.ModelViewSet):
-    queryset = Farm.objects.all()
-    serializer_class = FarmSerializer
+class SectionByTimeListAPI(viewsets.ModelViewSet):
+    queryset = SectionByTime.objects.all()
+    serializer_class = SectionByTimeSerializer
 
     def create(self, request):
         context={}
@@ -93,7 +93,7 @@ class PlantsGroupListAPI(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(farm)
         return Response(serializer.data)
-
+    '''
     @action(detail=False, methods=['GET'])
     def user_list(self, request):
         user = User.objects.get(id=request.session['id'])
@@ -101,7 +101,7 @@ class PlantsGroupListAPI(viewsets.ModelViewSet):
 
         serializer=self.get_serializer(user_farm,many=True)
         return Response(serializer.data)
-
+    '''
     @action(detail=True, methods=['PATCH'])
     def change_section(self, request, pk=None):
         farm = self.queryset.get(id=pk)

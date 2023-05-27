@@ -36,7 +36,7 @@ class BoardListAPI(viewsets.ModelViewSet):
         group=Farm.objects.get(user=user,name=self.request.data['group_name'])
         group.board_cnt = group.board_cnt + 1
         group.save()
-        serializer.save(user=user,plant_group=group)
+        serializer.save(user=user,farm=group)
 
     #[delete] plants_section/{key}
     def perform_destroy(self, instance):

@@ -20,11 +20,11 @@ def user_directory_path_output(instance,filename):
 class PlantsSection(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100,null=True)
-    date = models.DateTimeField(default=datetime.now)
-    input_image = models.ImageField(upload_to=user_directory_path_input,null=True)
+    #date = models.DateTimeField(default=datetime.now)
+    #input_image = models.ImageField(upload_to=user_directory_path_input,null=True)
     #output_image = models.FileField(upload_to=user_directory_path_output,null=True) #위치 지정해야하는데 나중에 설정해야할듯?
     status = models.CharField(max_length=1, default='0')
-    number = models.IntegerField(default=1)
+    #number = models.IntegerField(default=1)
     farm = models.ForeignKey(Farm,on_delete=models.CASCADE,null=True)
     is_delete = models.CharField(max_length=1, default='0')
 

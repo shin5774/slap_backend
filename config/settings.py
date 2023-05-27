@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'disease',
     'disease_by_section',
     'farm',
+    'section_by_time',
 ]
 
 MIDDLEWARE = [
