@@ -33,10 +33,10 @@ class BoardListAPI(viewsets.ModelViewSet):
     #[post] /plants_section
     def perform_create(self, serializer):
         user=User.objects.get(id=self.request.session['id'])
-        group=Farm.objects.get(user=user,name=self.request.data['group_name'])
-        group.board_cnt = group.board_cnt + 1
-        group.save()
-        serializer.save(user=user,farm=group)
+        farm=Farm.objects.get(user=user,name=self.request.data['group_name'])
+        farm.board_cnt = farm.board_cnt + 1
+        farm.save()
+        serializer.save(user=user,farm=farm)
 
     #[delete] plants_section/{key}
     def perform_destroy(self, instance):
