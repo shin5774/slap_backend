@@ -4,51 +4,23 @@ from datetime import datetime
 from user.models import User
 from .models import SectionByTime
 from plants_section.models import PlantsSection
+from farm.models import Farm
+from disease.models import Disease
+from disease_by_section.models import DiseaseBySection
 
 from rest_framework.response import Response
 from .serializers import SectionByTimeSerializer
 from rest_framework import viewsets,status
 from rest_framework.decorators import action
 
+import tensorflow as tf
+from yolov5 import strawberry_yolo
+
+leaf_classification = tf.keras.models.load_model('yolov5/res101.h5')
 
 class SectionByTimeListAPI(viewsets.ModelViewSet):
     queryset = SectionByTime.objects.all()
     serializer_class = SectionByTimeSerializer
-
-    def create(self, request):
-        context={}
-        context['name'] = request.data['name']
-        context['row']=request.data['row']
-        context['column'] = request.data['column']
-        context['humidity'] = request.data['humidity']
-        context['temperature'] = request.data['temperature']
-        user=User.objects.get(id=request.session['id'])
-        dupl_name=self.queryset.filter(user=user,name=context['name'])
-
-        if len(dupl_name) !=0:
-            return Response({"msg":"동일한 이름의 농장이 있습니다. 다른 이름을 등록해주세요"})
-
-        str_date=request.data['date']
-        date=datetime.strptime(str_date,"%Y-%m-%d")
-        context['date']=date
-        context['status']=request.data['status']
-
-        serializer=self.get_serializer(data=context)
-
-        serializer.is_valid()
-        self.perform_create(serializer)
-
-        return Response(serializer.data)
-
-    #[post] /farm
-    def perform_create(self,serializer):
-        user=User.objects.get(id=self.request.session['id'])
-        os.mkdir("media/image/" + user.id + "/" + self.request.data['name'])
-        farm=serializer.save(user=user)
-
-        for i in range(farm.row*farm.column):
-            PlantsSection.objects.create(name=i+1,farm=farm)
-
 
     #삭제 수행안됨
     #[delete] farm/{id}/
@@ -56,66 +28,96 @@ class SectionByTimeListAPI(viewsets.ModelViewSet):
         #instance.is_delete = '1'
         instance.save()
 
-    # [patch] farm/{id}/change_board/
-    # 유저 비번 바꾸는거랑 동일한 방식으로 보내면 됨
-    @action(detail=True,methods=['PATCH'])
-    def change_status(self,request,pk=None):
-        farm=self.queryset.get(id=pk)
-        status=request.data['status']
+    @action(detail=False, methods=['POST'])
+    def section_update(self,request):
+        #session에 farm정보를 넣을수 있으면 좋음. 근데 이게 될까?
 
-        if status=='1':
+        user = User.objects.get(id=request.session['id'])
+        farm = Farm.objects.get(user=user, name=request.data['name'])
+
+        #user = User.objects.get(id='user1')
+        #farm = Farm.objects.get(user=user, name='f1')
+        sections=PlantsSection.objects.filter(farm=farm)
+
+        images = request.FILES.getlist('image')
+        time=str(datetime.now().strftime("%Y-%m-%d-%H"))
+
+        farm_disease=False
+        leaf_detect_fail=[]
+
+        #이미지가 section수 만큼 들어오지 않았을경우의 예외처리
+        if len(sections) != len(images):
+            return Response({"msg":"이미지가 section 수에 맞게 들어오지 않았습니다."})
+
+        for i in range(len(sections)):
+            section=sections[i]
+            image=images[i]
+            #save 하고 update 해야할듯?
+
+            #savedsad
+            sbt=SectionByTime()
+            sbt.image=image
+            sbt.section=section
+            sbt.save()
+
+            #using yolo
+            file_path='media/image/{0}/{1}/{2}/'.format(user.id, farm.name,section.name)
+            weights='yolov5/leaf_detect.pt'
+            output_img, state = strawberry_yolo.detection(weights, file_path,time+"h_")
+
+            if status == 0:
+                leaf_detect_fail.append(i+1)
+                continue
+
+            # disease detection
+            disease_list=[False,False,False]
+            section_disease=False
+            N=strawberry_yolo.leaf_count(file_path)
+            classification_result = strawberry_yolo.classification(leaf_classification, N, file_path)
+
+            for j in range(N):
+                if classification_result[j]!=3:
+                    disease_list[classification_result[j]]=True
+
+            for k in range(3):
+                #disease 데이터 베이스 저장
+                if disease_list[k]:
+                    disease=Disease.objects.get(id=k+1)
+                    #disease_by_section 저장
+                    dbs=DiseaseBySection()
+                    dbs.cur_section=sbt
+                    dbs.disease=disease
+                    dbs.save()
+                    section_disease=True
+
+            if section_disease:
+                # sbt update
+                sbt.status=1
+                sbt.save()
+                farm_disease=True
+
+                #section update
+                if section.status!='1':
+                    section.status='1'
+                    section.save()
+
+            elif section.status=='1':
+                section.status='0'
+                section.save()
+
+            for j in range(N):
+                os.remove(os.path.join(file_path,'leaf_{0}.jpg'.format(j+1)))
+
+            os.remove(os.path.join(file_path,'output_image.jpg'))
+
+        if farm_disease:
             farm.status='1'
         else:
             farm.status='0'
 
         farm.save()
 
-        serializer=self.get_serializer(farm)
-        return Response(serializer.data)
-
-    # 위와 동일/ 필요값 name:변경할 이름
-    # [patch] farm/{id}/change_name/
-    @action(detail=True, methods=['PATCH'])
-    def change_name(self, request, pk=None):
-        name = request.data['name']
-        user = User.objects.get(id=self.request.session['id'])
-        exist=self.queryset.filter(user=user,name=name)
-
-        if len(exist) !=0:
-            return Response({"msg":"동일한 이름의 농장이 있습니다. 다른 이름을 등록해주세요"})
-
-        farm = self.queryset.get(id=pk)
-
-        os.rename("media/image/" + user.id + "/" + farm.name,"media/image/" + user.id + "/" + name)
-
-        farm.name = name
-        farm.save()
-
-        serializer = self.get_serializer(farm)
-        return Response(serializer.data)
-    '''
-    @action(detail=False, methods=['GET'])
-    def user_list(self, request):
-        user = User.objects.get(id=request.session['id'])
-        user_farm=Farm.objects.filter(user=user)
-
-        serializer=self.get_serializer(user_farm,many=True)
-        return Response(serializer.data)
-    '''
-    @action(detail=True, methods=['PATCH'])
-    def change_section(self, request, pk=None):
-        farm = self.queryset.get(id=pk)
-        number=request.data['number']
-
-        if number<0:
-            return Response({"msg": "잘못된 섹션수를 입력하였습니다."})
-
-        #섹션수 수정을 위한 코드(섹션 테이블에 데이터 추가 및 삭제를 하는법 의논 필요)
-
-        farm.number = number
-        farm.save()
-
-        serializer = self.get_serializer(farm)
-        return Response(serializer.data)
-
+        if len(leaf_detect_fail)!=0:
+            return Response({"msg": "save success but not leaf detected section exist"})
+        return Response({"msg":"save success"})
 
