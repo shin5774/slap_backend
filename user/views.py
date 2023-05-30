@@ -36,6 +36,7 @@ class MemberListAPI(viewsets.ModelViewSet):
         context['name'] = request.data['name']
         context['email']=request.data['email']
 
+        '''
         serializer = self.get_serializer(data=context)  # 요청값->serializer
 
         if serializer.is_valid(): #입력값이 serializer에서 설정한 유효성 검사를 통과했다면
@@ -43,6 +44,12 @@ class MemberListAPI(viewsets.ModelViewSet):
             os.mkdir("media/image/" + str(request.data['id']))
             return Response(serializer.data) #해당값을 반환해줌 보내줌
         return Response(serializer.error) #is_valid 호출후에 사용가능
+        '''
+
+        user=User(id=context['id'],password=context['password'],name=context['name'],email=context['email'])
+        user.save()
+        os.mkdir("media/image/" + str(request.data['id']))
+        return Response({"msg":"회원가입 완료"})
 
     def perform_destroy(self, instance):
         instance.is_delete='1'
