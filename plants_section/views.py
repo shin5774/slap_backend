@@ -7,8 +7,6 @@ from django.core.files.base import ContentFile
 #import static.leaf_vision
 #import static.classification_leaves
 
-import cv2
-from skimage import io
 from plants_section.models import PlantsSection
 from user.models import User
 from farm.models import Farm
@@ -19,6 +17,9 @@ from rest_framework.response import Response
 from .serializers import PlantsSectionSerializer
 from rest_framework import viewsets,status
 from rest_framework.decorators import action
+from django.http import JsonResponse
+from django.core import serializers
+
 
 #mask_rcnn=static.strawberry.segmentation("static/mask_rcnn_balloon_0010.h5")
 #leaf_classification = static.classification_leaves.Load_ResNet_Model("static/leaf_classification_model.pth")
@@ -259,3 +260,12 @@ class BoardListAPI(viewsets.ModelViewSet):
         serializer = self.get_serializer(group_name_list, many=True)
 
         return Response(serializer.data)
+
+    @action(detail=False, methods=['GET'])
+    def section_by_farm(self, request):
+        farm_name = request.data['name']
+        user=User.objects.get(id=request.session['id'])
+        farm=Farm.objects.get(user=user,name=farm_name)
+        sections=PlantsSection.objects.filter(farm=farm)
+        s_section=serializers.serialize('json',sections)
+        return JsonResponse(s_section,safe=False)
