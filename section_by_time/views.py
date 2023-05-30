@@ -12,6 +12,8 @@ from rest_framework.response import Response
 from .serializers import SectionByTimeSerializer
 from rest_framework import viewsets,status
 from rest_framework.decorators import action
+from django.http import JsonResponse
+from django.core import serializers
 
 import tensorflow as tf
 from yolov5 import strawberry_yolo
@@ -42,7 +44,7 @@ class SectionByTimeListAPI(viewsets.ModelViewSet):
         images = request.FILES.getlist('image')
         time=str(datetime.now().strftime("%Y-%m-%d-%H"))
 
-        farm_disease=False
+        farm_disease=Falseg
         leaf_detect_fail=[]
 
         #이미지가 section수 만큼 들어오지 않았을경우의 예외처리
@@ -119,5 +121,24 @@ class SectionByTimeListAPI(viewsets.ModelViewSet):
 
         if len(leaf_detect_fail)!=0:
             return Response({"msg": "save success but not leaf detected section exist"})
+
         return Response({"msg":"save success"})
 
+    @action(detail=False,methods=['GET'])
+    def latest_section(self,request):
+        context={}
+        section=PlantsSection.objects.get(id=request.data['section_id'])
+        sbt=SectionByTime.objects.filter(section=section).latest('date')
+
+        serialized_data = serializers.serialize('json', [sbt])
+
+        try:
+            is_disease=DiseaseBySection.objects.get(cur_section=sbt)
+            disease=Disease.objects.get(id=is_disease.dissease.id)
+            context['is_disease']=1
+            context['disease']=disease.name
+            context['explain']=disease.explain
+        except DiseaseBySection.DoesNotExist:
+            context['is_disease']=0
+
+        return Response({"seciton":serialized_data,"disease":context})
