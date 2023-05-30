@@ -19,73 +19,7 @@
 반환값: 없음  
 
 
-3. [get] plants_section/{id}/ \
-기능: 게시물 조회 기능(정확히는 db 값 반환) \
-필요값: 없음 \
-반환값: 게시판 db값(model 인자 전부,조회수 +1 되어서),is_like:사용자의 해당 게시물 좋아요 여부(문자),0:안함, 1:함
-
-
-4. [get] plants_section/personal_board/ \
-기능: 로그인되어있는 사용자의 게시판 리스트 반환 \
-필요값: 없음 \
-반환값: 해당 사용자가 만든 게시판의 리스트  
-
-
-5. [get] plants_section/like_board/ \
-기능: 전체 게시판을 좋아요 순으로 정렬 시킨 리스트를 반환 \
-필요값: 없음 \
-반환값: 좋아요순으로 정렬된 게시판 리스트 
-
-
-6. [get] plants_section/view_board/ \
-기능: 전체 게시판을 조회순으로 정렬 시킨 리스트를 반환 \
-필요값: 없음 \
-반환값: 조회순으로 정렬된 게시판 리스트 
-
-
-7. [get] plants_section/date_board/ \
-기능: 전체 게시판을 시간순으로 정렬 시킨 리스트를 반환 \
-필요값: 없음 \
-반환값: 시간순으로 정렬된 게시판 리스트
-
-
-8. [get] plants_section/search/ \
-기능: 검색한 내용(아이디,제목)이 포함된 게시물 리스트를 반환  \
-필요값: search \
-반환값: 검색한 내용(아이디,제목)이 포함된 게시물 리스트
-
-
-9. [patch] plants_section/{id}/change_board/ \
-기능: 게시물의 제목과 내용을 변경하는 기능  \
-필요값: title,explain \
-반환값: 변경이 완료된 게시물의 db값(model 인자 전부)
-
-
-10. [post] plants_section/input_image/ \
-기능: 게시물의 input_image를 넣는 기능  \
-필요값: input_image,group_name(그룹 이름) \
-반환값: 게시물의 db값(model 인자 전부) =>기대값: input_image만 들어간 db값
-
-
-11. [post] plants_section/output_image/ \
-기능: input_image의 segmentation 결과를 output_image를 넣는 기능  \
-필요값: group_name(그룹 이름) \
-반환값: 게시물의 db값(model 인자 전부) =>기대값: output_image도 들어간 db값
-
-
-12. [post] plants_section/write_board/  
-기능: 최종적으로 게시물을 작성하며 동시에 이파리 db도 저장하는 기능  \
-필요값: title,explain,group_name \
-반환값: 게시물의 db값(model 인자 전부)
-
-
-13. [patch] plants_section/{id}/push_like/ \
-기능: 게시물의 좋아요수를 증감시키는 기능  \
-필요값: is_pushed:문자,0:증가,1:감소 \
-반환값: 좋아요값의 변경이 완료된 게시물의 db값(model 인자 전부)
-
-
-14. [get] plants_section/group_board_list/ \
-기능: 작물별 게시물 검색 기능  \
-필요값: name:작물 이름 \
-반환값: 작물이름이 일치하는 게시물의 db값(model 인자 전부)
+3. [get] plants_section/section_by_farm/ \
+기능: 해당 농장의 전체 섹션의 data 반환
+필요값: name:농장 이름
+반환값: 농장안의 모든 섹션의 dgata (질병판단은 status)
