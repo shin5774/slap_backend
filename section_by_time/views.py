@@ -33,10 +33,10 @@ class SectionByTimeListAPI(viewsets.ModelViewSet):
     @action(detail=False, methods=['POST'])
     def section_update(self,request):
         #session에 farm정보를 넣을수 있으면 좋음. 근데 이게 될까?
+        data=[]
 
         user = User.objects.get(id=request.session['id'])
         farm = Farm.objects.get(user=user, name=request.data['name'])
-
         #user = User.objects.get(id='user1')
         #farm = Farm.objects.get(user=user, name='f1')
         sections=PlantsSection.objects.filter(farm=farm)
@@ -44,7 +44,7 @@ class SectionByTimeListAPI(viewsets.ModelViewSet):
         images = request.FILES.getlist('image')
         time=str(datetime.now().strftime("%Y-%m-%d-%H"))
 
-        farm_disease=Falseg
+        farm_disease=False
         leaf_detect_fail=[]
 
         #이미지가 section수 만큼 들어오지 않았을경우의 예외처리
@@ -111,7 +111,19 @@ class SectionByTimeListAPI(viewsets.ModelViewSet):
                 os.remove(os.path.join(file_path,'leaf_{0}.jpg'.format(j+1)))
 
             os.remove(os.path.join(file_path,'output_image.jpg'))
+            context = {'id': sbt.id, 'image_url': sbt.image.url, 'section_id': sbt.section.id}
 
+            if section_disease:
+                context['is_disease'] = 1
+                context['disease']=[]
+                for cd in range(3):
+                    if disease_list[cd]:
+                        ccd = Disease.objects.get(id=cd + 1)
+                        context['disease'].append({"name": ccd.name, "explain": ccd.explain})
+            else:
+                context['is_disease'] = 0
+
+            data.append(context)
         if farm_disease:
             farm.status='1'
         else:
@@ -122,7 +134,8 @@ class SectionByTimeListAPI(viewsets.ModelViewSet):
         if len(leaf_detect_fail)!=0:
             return Response({"msg": "save success but not leaf detected section exist"})
 
-        return Response({"msg":"save success"})
+        return JsonResponse(data,safe=False)
+        #return Response({"msg":"save success"})
 
     @action(detail=False,methods=['GET'])
     def latest_section(self,request):
